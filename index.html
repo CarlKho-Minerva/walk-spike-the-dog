@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Walk Spike the Dog - Somach</title>
+    <!-- Google Fonts for Retro-Pixel Aesthetics -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
     <style>
         body, html {
             margin: 0;
@@ -10,8 +14,9 @@
             height: 100%;
             background-color: #0d0d0d;
             color: #f2f2f2;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'VT323', monospace;
             overflow: hidden;
+            font-size: 21px;
         }
 
         /* The Article Viewport */
@@ -50,20 +55,19 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            border: 1px solid #444;
+            border: 2px solid #f2f2f2;
             padding: 15px;
-            font-size: 13px;
-            background: rgba(13, 13, 13, 0.95);
+            background: #0d0d0d;
             color: #fff;
             z-index: 1000;
         }
 
         /* Container for PNG frames */
         .dog-image-container {
-            height: 130px;
+            height: 140px;
             margin: 25px 0;
             display: inline-block;
-            overflow: hidden; /* Safeguard for cropping */
+            overflow: hidden;
         }
 
         #dog-img {
@@ -71,18 +75,18 @@
             /* Inverts colors, blends the off-black background, and crops out top numbers */
             filter: invert(1) contrast(1.2);
             mix-blend-mode: lighten;
-            clip-path: inset(12% 0 0 0);
+            clip-path: inset(15% 0 0 0); /* Deeper crop to remove artifact */
             image-rendering: pixelated;
         }
 
         button {
             background: #0d0d0d;
             color: #fff;
-            border: 1px solid #fff;
+            border: 2px solid #fff;
             padding: 8px 16px;
             cursor: pointer;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
+            font-family: 'Silkscreen', monospace;
+            font-size: 11px;
             margin-top: 10px;
             transition: background 0.3s, color 0.3s;
         }
@@ -94,8 +98,21 @@
 
         h1, h2, h3 {
             margin: 10px 0;
+            font-family: 'Silkscreen', monospace;
             font-weight: normal;
             letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+
+        h3 {
+            font-size: 20px;
         }
 
         .dimmed {
@@ -115,7 +132,7 @@
         <strong>[METABOLIC STATUS]</strong><br>
         Glucose Level: <span id="telemetry">98</span> mg/dL<br>
         Baseline State: <span id="status-text">STABLE</span><br>
-        <button id="action-btn" onclick="toggleSpike()">Simulate Spike (184 mg/dL)</button>
+        <button id="action-btn" onclick="toggleSpike()">Simulate Spike</button>
     </div>
 
     <!-- The actual Somach Editorial Site -->
@@ -124,8 +141,8 @@
     <!-- The Metaphorical Lockout Overlay -->
     <div id="lockout-overlay" class="unlocked">
         <h1>[ METABOLIC SHIFT DETECTED ]</h1>
-        <p style="color: #888;">Spike's current reading is 184 mg/dL. Code access suspended.</p>
-        <hr style="border: 0; border-top: 1px solid #333; width: 60%; max-width: 400px; margin: 20px 0;">
+        <p style="color: #888; font-size: 24px;">Spike's current reading is 184 mg/dL. Code access suspended.</p>
+        <hr style="border: 0; border-top: 2px solid #333; width: 60%; max-width: 400px; margin: 20px 0;">
         
         <button id="motion-btn" onclick="requestMotionPermission()">Enable Motion Sensor</button>
         
@@ -134,7 +151,7 @@
         </div>
 
         <h3 id="step-counter">Required Pacing Steps: 50</h3>
-        <p style="font-size: 12px; color: #666; margin-top: 15px;">[Shake phone or tap Spacebar to simulate muscle glucose uptake]</p>
+        <p style="font-size: 18px; color: #666; margin-top: 15px;">[Shake phone or tap Spacebar to simulate muscle glucose uptake]</p>
     </div>
 
     <script>
@@ -218,7 +235,7 @@
             frameEl.classList.remove('dimmed');
             telemetryEl.innerText = '98';
             statusEl.innerText = 'STABLE';
-            actionBtn.innerText = 'Simulate Spike (184 mg/dL)';
+            actionBtn.innerText = 'Simulate Spike';
         }
 
         // Motion detection logic for real pacing
