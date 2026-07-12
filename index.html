@@ -58,15 +58,18 @@
             z-index: 1000;
         }
 
-        .dog-container {
-            font-size: 15px;
-            line-height: 1.2;
+        /* Container for PNG frames */
+        .dog-image-container {
             height: 130px;
             margin: 25px 0;
-            white-space: pre;
             display: inline-block;
-            text-align: left;
-            color: #fff;
+        }
+
+        #dog-img {
+            height: 100%;
+            /* Inverts colors to make white lines on black and sharpens contrast */
+            filter: invert(1) contrast(1.2);
+            image-rendering: pixelated;
         }
 
         button {
@@ -123,8 +126,8 @@
         
         <button id="motion-btn" onclick="requestMotionPermission()">Enable Motion Sensor</button>
         
-        <div>
-            <pre class="dog-container" id="dog-ascii"></pre>
+        <div class="dog-image-container">
+            <img id="dog-img" src="ezgif-split/tile000.png" alt="Spike Walking">
         </div>
 
         <h3 id="step-counter">Required Pacing Steps: 50</h3>
@@ -144,68 +147,30 @@
         const frameEl = document.getElementById('article-frame');
         const actionBtn = document.getElementById('action-btn');
         const motionBtn = document.getElementById('motion-btn');
+        const dogImgEl = document.getElementById('dog-img');
 
-        // Detailed 8-frame fluid walking dog cycle
+        // PNG frame sequence from ezgif-split
         const frames = [
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
-\\  / \\ / \\  /
- \\_]  \\_]  \\_]`,
-
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
-|  | | | |  |
-\\_]  \\_]  \\_]`,
-
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
-/  / / / /  /
-\\_]  \\_]  \\_]`,
-
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
-|  | | | |  |
- \\_]  \\_]  \\_]`,
-
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
-\\  \\ \\ \\ \\  \\
- \\_]  \\_]  \\_]`,
-
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
- |  | | |  |
- \\_]  \\_]  \\_]`,
-
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
- \\  \\ \\ \\  \\
-  \\_]  \\_]  \\_]`,
-
-`  / \\__
- (    @\\___
- /         \\
-/   _   _   \\
-  |  | |  |
-  \\_]  \\_]  \\_]`
+            'ezgif-split/tile000.png',
+            'ezgif-split/tile001.png',
+            'ezgif-split/tile002.png',
+            'ezgif-split/tile004.png',
+            'ezgif-split/tile005.png',
+            'ezgif-split/tile006.png',
+            'ezgif-split/tile008.png',
+            'ezgif-split/tile009.png'
         ];
 
+        // Preload frames to prevent flickering during animation
+        const preloadedImages = [];
+        frames.forEach((src) => {
+            const img = new Image();
+            img.src = src;
+            preloadedImages.push(img);
+        });
+
         function animateDog() {
-            document.getElementById('dog-ascii').textContent = frames[frameIndex];
+            dogImgEl.src = frames[frameIndex];
             frameIndex = (frameIndex + 1) % frames.length;
         }
 
@@ -230,7 +195,7 @@
             if (animInterval) clearInterval(animInterval);
             frameIndex = 0;
             animateDog();
-            animInterval = setInterval(animateDog, 140); // Faster frame rate for 8-frame loop
+            animInterval = setInterval(animateDog, 120); // Steady gait timing
         }
 
         function updateSteps() {
@@ -260,7 +225,7 @@
             if (!acc) return;
 
             const now = Date.now();
-            if (now - lastMotionTime > 250) { // Limit to maximum 4 steps per second
+            if (now - lastMotionTime > 250) { // Limit step count frequency
                 const movementMagnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
                 if (movementMagnitude > 15) { // Threshold for gait movement
                     steps--;
