@@ -2,28 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Walk Spike the Dog</title>
+    <title>Walk Spike the Dog - Somach</title>
     <style>
-        body {
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #050505;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        /* The Article Viewport */
+        #article-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            transition: filter 0.5s ease;
+        }
+
+        /* The Lockout Overlay */
+        #lockout-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-color: #050505;
             color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            z-index: 999;
+            text-align: center;
             text-shadow: 0 0 5px #00ff00;
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
         }
 
-        .active-spike {
-            background-color: #00ff00;
-            color: #050505;
-            text-shadow: none;
+        #lockout-overlay.unlocked {
+            transform: translateY(-100%);
         }
 
+        /* Demo Dashboard controller */
         #panel {
             position: absolute;
             top: 20px;
@@ -33,13 +55,8 @@
             font-size: 14px;
             background: rgba(5,5,5,0.9);
             color: #00ff00;
-            z-index: 100;
-        }
-
-        #screen-content {
-            text-align: center;
-            width: 80%;
-            max-width: 600px;
+            z-index: 1000;
+            text-shadow: 0 0 5px #00ff00;
         }
 
         .dog-container {
@@ -62,49 +79,40 @@
             font-weight: bold;
             margin-top: 10px;
         }
-        
-        .active-spike button {
-            background: #00ff00;
-            color: #050505;
-            border: 1px solid #050505;
-        }
 
         h1, h2, h3 {
             margin: 10px 0;
             letter-spacing: 2px;
+        }
+
+        .dimmed {
+            filter: blur(5px) grayscale(100%);
         }
     </style>
 </head>
 <body>
 
     <div id="panel">
-        <strong>[METABOLIC SIMULATOR V1.0]</strong><br>
-        Glucose Telemetry: <span id="telemetry">98</span> mg/dL<br>
+        <strong>[METABOLIC CONTROL PANEL]</strong><br>
+        Glucose: <span id="telemetry">98</span> mg/dL<br>
         State: <span id="status-text">STABLE</span><br>
-        <button onclick="triggerSpike()">Simulate Carb Intake (Spike to 184)</button>
+        <button id="action-btn" onclick="toggleSpike()">Simulate Spike (184 mg/dL)</button>
     </div>
 
-    <div id="screen-content">
-        <div id="normal-view">
-            <h2>SOMACH TERMINAL v1.0.4</h2>
-            <hr style="border: 0; border-top: 1px solid #00ff00; margin: 20px 0;">
-            <p style="text-align: left;">&gt; Initializing neural telemetry link... OK</p>
-            <p style="text-align: left;">&gt; Active sensor: Dexcom Stelo (ID: ST-9981)... Connected</p>
-            <p style="text-align: left;">&gt; System metrics: Glycemic state stable. Optimal coding window active.</p>
-            <p style="text-align: left; color: #00aa00;">&gt; Ready for input...</p>
-        </div>
+    <!-- The actual Somach Editorial Site -->
+    <iframe id="article-frame" src="https://somach.vercel.app/editorial/jump.html"></iframe>
 
-        <div id="spike-view" style="display: none;">
-            <h1>!!! METABOLIC LOCKOUT !!!</h1>
-            <h2>GLUCOSE SPIKE DETECTED (184 mg/dL)</h2>
-            <hr style="border: 0; border-top: 1px solid #050505; margin: 20px 0;">
-            <p>Spike needs a walk to flatten the glycemic curve.</p>
-            
-            <pre class="dog-container" id="dog-ascii"></pre>
+    <!-- The Metaphorical Lockout Overlay -->
+    <div id="lockout-overlay" class="unlocked">
+        <h1>!!! METABOLIC LOCKOUT !!!</h1>
+        <h2>GLUCOSE SPIKE DETECTED (184 mg/dL)</h2>
+        <hr style="border: 0; border-top: 1px solid #00ff00; width: 80%; max-width: 500px; margin: 20px 0;">
+        <p>Your attention system is compromised. Pacing required to restore focus.</p>
+        
+        <pre class="dog-container" id="dog-ascii"></pre>
 
-            <h3 id="step-counter">Steps remaining: 50</h3>
-            <p style="font-size: 12px; opacity: 0.8;">[Tap Spacebar to pace and burn glucose]</p>
-        </div>
+        <h3 id="step-counter">Steps remaining: 50</h3>
+        <p style="font-size: 12px; opacity: 0.8;">[Tap Spacebar to walk Spike and clear your screen]</p>
     </div>
 
     <script>
@@ -112,6 +120,11 @@
         let isSpiked = false;
         let frameIndex = 0;
         let animInterval = null;
+        const telemetryEl = document.getElementById('telemetry');
+        const statusEl = document.getElementById('status-text');
+        const overlayEl = document.getElementById('lockout-overlay');
+        const frameEl = document.getElementById('article-frame');
+        const actionBtn = document.getElementById('action-btn');
 
         const frames = [
 `   __    __
@@ -138,13 +151,21 @@
             frameIndex = (frameIndex + 1) % frames.length;
         }
 
+        function toggleSpike() {
+            if (!isSpiked) {
+                triggerSpike();
+            } else {
+                resolveSpike();
+            }
+        }
+
         function triggerSpike() {
             isSpiked = true;
-            document.body.classList.add('active-spike');
-            document.getElementById('normal-view').style.display = 'none';
-            document.getElementById('spike-view').style.display = 'block';
-            document.getElementById('telemetry').innerText = '184';
-            document.getElementById('status-text').innerText = 'CRITICAL SPIKE';
+            overlayEl.classList.remove('unlocked');
+            frameEl.classList.add('dimmed');
+            telemetryEl.innerText = '184';
+            statusEl.innerText = 'CRITICAL SPIKE';
+            actionBtn.innerText = 'Abrupt Reset';
             steps = 50;
             updateSteps();
 
@@ -167,11 +188,11 @@
                 clearInterval(animInterval);
                 animInterval = null;
             }
-            document.body.classList.remove('active-spike');
-            document.getElementById('normal-view').style.display = 'block';
-            document.getElementById('spike-view').style.display = 'none';
-            document.getElementById('telemetry').innerText = '98';
-            document.getElementById('status-text').innerText = 'STABLE';
+            overlayEl.classList.add('unlocked');
+            frameEl.classList.remove('dimmed');
+            telemetryEl.innerText = '98';
+            statusEl.innerText = 'STABLE';
+            actionBtn.innerText = 'Simulate Spike (184 mg/dL)';
         }
 
         window.addEventListener('keydown', (e) => {
