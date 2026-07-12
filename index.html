@@ -63,12 +63,15 @@
             height: 130px;
             margin: 25px 0;
             display: inline-block;
+            overflow: hidden; /* Safeguard for cropping */
         }
 
         #dog-img {
             height: 100%;
-            /* Inverts colors to make white lines on black and sharpens contrast */
+            /* Inverts colors, blends the off-black background, and crops out top numbers */
             filter: invert(1) contrast(1.2);
+            mix-blend-mode: lighten;
+            clip-path: inset(12% 0 0 0);
             image-rendering: pixelated;
         }
 
