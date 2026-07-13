@@ -25,7 +25,7 @@
             height: 100%;
             border: none;
             background: #fff;
-            transition: filter 0.5s ease;
+            transition: filter 0.15s ease-out; /* Smooth transition during walking */
         }
 
         /* Clean Monochrome Lockout Overlay */
@@ -35,7 +35,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #0d0d0d;
+            background-color: rgba(13, 13, 13, 0.95); /* Slight transparency to show blurred article underneath */
             color: #f2f2f2;
             display: flex;
             flex-direction: column;
@@ -43,11 +43,12 @@
             align-items: center;
             z-index: 999;
             text-align: center;
-            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1), opacity 0.5s ease;
         }
 
         #lockout-overlay.unlocked {
             transform: translateY(-100%);
+            opacity: 0;
         }
 
         /* Minimalist Dashboard Controller */
@@ -62,12 +63,13 @@
             z-index: 1000;
         }
 
-        /* Container for PNG frames */
+        /* Container for PNG frames with physical bounce */
         .dog-image-container {
             height: 140px;
             margin: 25px 0;
             display: inline-block;
             overflow: hidden;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Springy bounce */
         }
 
         #dog-img {
@@ -75,7 +77,7 @@
             /* Inverts colors, blends the off-black background, and crops out top numbers */
             filter: invert(1) contrast(1.2);
             mix-blend-mode: lighten;
-            clip-path: inset(15% 0 0 0); /* Deeper crop to remove artifact */
+            clip-path: inset(15% 0 0 0);
             image-rendering: pixelated;
         }
 
@@ -146,7 +148,7 @@
         
         <button id="motion-btn" onclick="requestMotionPermission()">Enable Motion Sensor</button>
         
-        <div class="dog-image-container">
+        <div class="dog-image-container" id="dog-container">
             <img id="dog-img" src="ezgif-split/tile000.png" alt="Spike Walking">
         </div>
 
@@ -168,6 +170,7 @@
         const actionBtn = document.getElementById('action-btn');
         const motionBtn = document.getElementById('motion-btn');
         const dogImgEl = document.getElementById('dog-img');
+        const dogContainerEl = document.getElementById('dog-container');
 
         // PNG frame sequence from ezgif-split
         const frames = [
@@ -220,6 +223,21 @@
 
         function updateSteps() {
             document.getElementById('step-counter').innerText = `Required Pacing Steps: ${steps}`;
+            
+            // Dynamic visual reveal calculation
+            let progress = (50 - steps) / 50; // 0.0 to 1.0
+            let currentBlur = 10 * (1 - progress);
+            let currentGrayscale = 100 * (1 - progress);
+            
+            frameEl.style.filter = `blur(${currentBlur}px) grayscale(${currentGrayscale}%)`;
+            overlayEl.style.opacity = 1 - (progress * 0.4); // Gradually thin out background mask
+
+            // Micro-feedback: Dog hop/bounce per registered step
+            dogContainerEl.style.transform = 'translateY(-15px) scale(1.05)';
+            setTimeout(() => {
+                dogContainerEl.style.transform = 'translateY(0) scale(1)';
+            }, 100);
+
             if (steps <= 0) {
                 resolveSpike();
             }
@@ -233,6 +251,7 @@
             }
             overlayEl.classList.add('unlocked');
             frameEl.classList.remove('dimmed');
+            frameEl.style.filter = 'none'; // Ensure clean slate
             telemetryEl.innerText = '98';
             statusEl.innerText = 'STABLE';
             actionBtn.innerText = 'Simulate Spike';
