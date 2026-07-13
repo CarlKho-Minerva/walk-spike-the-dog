@@ -2,109 +2,158 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Walk Spike the Dog</title>
+    <title>Walk Spike the Dog - Somach</title>
+    <!-- Google Fonts for Retro-Pixel Aesthetics -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=VT323&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #050505;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #0d0d0d;
+            color: #f2f2f2;
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            font-size: 21px;
+        }
+
+        /* The Article Viewport */
+        #article-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            transition: filter 0.15s ease-out; /* Smooth transition during walking */
+        }
+
+        /* Clean Monochrome Lockout Overlay */
+        #lockout-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0d0d; /* Solid color to ensure perfect blend mode initialization */
+            color: #f2f2f2;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            text-shadow: 0 0 5px #00ff00;
+            z-index: 999;
+            text-align: center;
+            /* Transition background-color instead of opacity to preserve mix-blend-mode */
+            transition: transform 0.8s cubic-bezier(0.85, 0, 0.15, 1), background-color 0.2s ease-out;
         }
 
-        .active-spike {
-            background-color: #00ff00;
-            color: #050505;
-            text-shadow: none;
+        #lockout-overlay.unlocked {
+            transform: translateY(-100%);
         }
 
+        /* Minimalist Dashboard Controller */
         #panel {
             position: absolute;
             top: 20px;
             left: 20px;
-            border: 1px dashed #00ff00;
+            border: 2px solid #f2f2f2;
             padding: 15px;
-            font-size: 14px;
-            background: rgba(5,5,5,0.9);
-            color: #00ff00;
-            z-index: 100;
+            background: #0d0d0d;
+            color: #fff;
+            z-index: 1000;
         }
 
-        #screen-content {
-            text-align: center;
-            width: 80%;
-            max-width: 600px;
-        }
-
-        .dog-container {
-            font-size: 16px;
-            line-height: 1.3;
-            height: 120px;
-            margin: 30px 0;
-            white-space: pre-wrap;
+        /* Container for PNG frames with physical bounce */
+        .dog-image-container {
+            height: 140px;
+            margin: 25px 0;
             display: inline-block;
-            text-align: left;
+            overflow: hidden;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Springy bounce */
+        }
+
+        #dog-img {
+            height: 100%;
+            /* Inverts colors, blends the off-black background, and crops out top numbers */
+            filter: invert(1) contrast(1.2);
+            mix-blend-mode: screen; /* Uses screen for mathematically robust transparency */
+            clip-path: inset(15% 0 0 0);
+            image-rendering: pixelated;
         }
 
         button {
-            background: #050505;
-            color: #00ff00;
-            border: 1px solid #00ff00;
+            background: #0d0d0d;
+            color: #fff;
+            border: 2px solid #fff;
             padding: 8px 16px;
             cursor: pointer;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
+            font-family: 'Silkscreen', monospace;
+            font-size: 11px;
             margin-top: 10px;
+            transition: background 0.3s, color 0.3s;
         }
-        
-        .active-spike button {
-            background: #00ff00;
-            color: #050505;
-            border: 1px solid #050505;
+
+        button:hover {
+            background: #fff;
+            color: #0d0d0d;
         }
 
         h1, h2, h3 {
             margin: 10px 0;
-            letter-spacing: 2px;
+            font-family: 'Silkscreen', monospace;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+
+        h3 {
+            font-size: 20px;
+        }
+
+        .dimmed {
+            filter: blur(10px) grayscale(100%);
+        }
+
+        #motion-btn {
+            background: #222;
+            border-color: #555;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
     <div id="panel">
-        <strong>[METABOLIC SIMULATOR V1.0]</strong><br>
-        Glucose Telemetry: <span id="telemetry">98</span> mg/dL<br>
-        State: <span id="status-text">STABLE</span><br>
-        <button onclick="triggerSpike()">Simulate Carb Intake (Spike to 184)</button>
+        <strong>[METABOLIC STATUS]</strong><br>
+        Glucose Level: <span id="telemetry">98</span> mg/dL<br>
+        Baseline State: <span id="status-text">STABLE</span><br>
+        <button id="action-btn" onclick="toggleSpike()">Simulate Spike</button>
     </div>
 
-    <div id="screen-content">
-        <div id="normal-view">
-            <h2>SOMACH TERMINAL v1.0.4</h2>
-            <hr style="border: 0; border-top: 1px solid #00ff00; margin: 20px 0;">
-            <p style="text-align: left;">&gt; Initializing neural telemetry link... OK</p>
-            <p style="text-align: left;">&gt; Active sensor: Dexcom Stelo (ID: ST-9981)... Connected</p>
-            <p style="text-align: left;">&gt; System metrics: Glycemic state stable. Optimal coding window active.</p>
-            <p style="text-align: left; color: #00aa00;">&gt; Ready for input...</p>
+    <!-- The actual Somach Editorial Site -->
+    <iframe id="article-frame" src="https://somach.vercel.app/editorial/jump.html"></iframe>
+
+    <!-- The Metaphorical Lockout Overlay -->
+    <div id="lockout-overlay" class="unlocked">
+        <h1>[ METABOLIC SHIFT DETECTED ]</h1>
+        <p style="color: #888; font-size: 24px;">Spike's current reading is 184 mg/dL. Code access suspended.</p>
+        <hr style="border: 0; border-top: 2px solid #333; width: 60%; max-width: 400px; margin: 20px 0;">
+        
+        <button id="motion-btn" onclick="requestMotionPermission()">Enable Motion Sensor</button>
+        
+        <div class="dog-image-container" id="dog-container">
+            <img id="dog-img" src="ezgif-split/tile000.png" alt="Spike Walking">
         </div>
 
-        <div id="spike-view" style="display: none;">
-            <h1>!!! METABOLIC LOCKOUT !!!</h1>
-            <h2>GLUCOSE SPIKE DETECTED (184 mg/dL)</h2>
-            <hr style="border: 0; border-top: 1px solid #050505; margin: 20px 0;">
-            <p>Spike needs a walk to flatten the glycemic curve.</p>
-            
-            <pre class="dog-container" id="dog-ascii"></pre>
-
-            <h3 id="step-counter">Steps remaining: 50</h3>
-            <p style="font-size: 12px; opacity: 0.8;">[Tap Spacebar to pace and burn glucose]</p>
-        </div>
+        <h3 id="step-counter">Required Pacing Steps: 50</h3>
+        <p style="font-size: 18px; color: #666; margin-top: 15px;">[Shake phone or tap Spacebar to simulate muscle glucose uptake]</p>
     </div>
 
     <script>
@@ -112,50 +161,85 @@
         let isSpiked = false;
         let frameIndex = 0;
         let animInterval = null;
+        let lastMotionTime = 0;
 
+        const telemetryEl = document.getElementById('telemetry');
+        const statusEl = document.getElementById('status-text');
+        const overlayEl = document.getElementById('lockout-overlay');
+        const frameEl = document.getElementById('article-frame');
+        const actionBtn = document.getElementById('action-btn');
+        const motionBtn = document.getElementById('motion-btn');
+        const dogImgEl = document.getElementById('dog-img');
+        const dogContainerEl = document.getElementById('dog-container');
+
+        // PNG frame sequence from ezgif-split
         const frames = [
-`   __    __
-  /  \\__/  \\____
-  \\            /___
-   / /-------\\ \\
-  /_/         /_/`,
-
-`   __    __
-  /  \\__/  \\____
-  \\            /___
-    | |-------\\ |
-   /_/         /_/`,
-
-`   __    __
-  /  \\__/  \\____
-  \\            /___
-   \\ \\-------\\ \\
-   /_/         /_/`
+            'ezgif-split/tile000.png',
+            'ezgif-split/tile001.png',
+            'ezgif-split/tile002.png',
+            'ezgif-split/tile004.png',
+            'ezgif-split/tile005.png',
+            'ezgif-split/tile006.png',
+            'ezgif-split/tile008.png',
+            'ezgif-split/tile009.png'
         ];
 
+        // Preload frames to prevent flickering during animation
+        const preloadedImages = [];
+        frames.forEach((src) => {
+            const img = new Image();
+            img.src = src;
+            preloadedImages.push(img);
+        });
+
         function animateDog() {
-            document.getElementById('dog-ascii').textContent = frames[frameIndex];
+            dogImgEl.src = frames[frameIndex];
             frameIndex = (frameIndex + 1) % frames.length;
+        }
+
+        function toggleSpike() {
+            if (!isSpiked) {
+                triggerSpike();
+            } else {
+                resolveSpike();
+            }
         }
 
         function triggerSpike() {
             isSpiked = true;
-            document.body.classList.add('active-spike');
-            document.getElementById('normal-view').style.display = 'none';
-            document.getElementById('spike-view').style.display = 'block';
-            document.getElementById('telemetry').innerText = '184';
-            document.getElementById('status-text').innerText = 'CRITICAL SPIKE';
+            overlayEl.classList.remove('unlocked');
+            frameEl.classList.add('dimmed');
+            telemetryEl.innerText = '184';
+            statusEl.innerText = 'HYPERGLYCEMIA';
+            actionBtn.innerText = 'Force Reset';
             steps = 50;
             updateSteps();
 
             if (animInterval) clearInterval(animInterval);
             frameIndex = 0;
             animateDog();
-            animInterval = setInterval(animateDog, 200);
+            animInterval = setInterval(animateDog, 120); // Steady gait timing
         }
 
         function updateSteps() {
-            document.getElementById('step-counter').innerText = `Steps remaining: ${steps}`;
+            document.getElementById('step-counter').innerText = `Required Pacing Steps: ${steps}`;
+            
+            // Dynamic visual reveal calculation
+            let progress = (50 - steps) / 50; // 0.0 to 1.0
+            let currentBlur = 10 * (1 - progress);
+            let currentGrayscale = 100 * (1 - progress);
+            
+            frameEl.style.filter = `blur(${currentBlur}px) grayscale(${currentGrayscale}%)`;
+            
+            // Fade background-color transparency instead of parent opacity to keep mix-blend-mode intact
+            overlayEl.style.backgroundColor = `rgba(13, 13, 13, ${1 - (progress * 0.82)})`;
+
+            // Micro-feedback: Dog hop/bounce per registered step
+            dogContainerEl.style.transform = 'translateY(-15px) scale(1.05)';
+            setTimeout(() => {
+                dogContainerEl.style.transform = 'translateY(0) scale(1)';
+            }, 100);
+
             if (steps <= 0) {
                 resolveSpike();
             }
@@ -167,13 +251,51 @@
                 clearInterval(animInterval);
                 animInterval = null;
             }
-            document.body.classList.remove('active-spike');
-            document.getElementById('normal-view').style.display = 'block';
-            document.getElementById('spike-view').style.display = 'none';
-            document.getElementById('telemetry').innerText = '98';
-            document.getElementById('status-text').innerText = 'STABLE';
+            overlayEl.classList.add('unlocked');
+            frameEl.classList.remove('dimmed');
+            frameEl.style.filter = 'none'; // Ensure clean slate
+            telemetryEl.innerText = '98';
+            statusEl.innerText = 'STABLE';
+            actionBtn.innerText = 'Simulate Spike';
+            
+            // Reset background color for next lockout
+            overlayEl.style.backgroundColor = '#0d0d0d';
         }
 
+        // Motion detection logic for real pacing
+        function handleMotion(event) {
+            if (!isSpiked) return;
+            const acc = event.accelerationIncludingGravity;
+            if (!acc) return;
+
+            const now = Date.now();
+            if (now - lastMotionTime > 250) { // Limit step count frequency
+                const movementMagnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+                if (movementMagnitude > 15) { // Threshold for gait movement
+                    steps--;
+                    updateSteps();
+                    lastMotionTime = now;
+                }
+            }
+        }
+
+        function requestMotionPermission() {
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('devicemotion', handleMotion);
+                            motionBtn.style.display = 'none';
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('devicemotion', handleMotion);
+                motionBtn.style.display = 'none';
+            }
+        }
+
+        // Fallback spacebar pacing trigger
         window.addEventListener('keydown', (e) => {
             if (isSpiked && e.code === 'Space') {
                 e.preventDefault();
